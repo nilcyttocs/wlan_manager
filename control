@@ -1,0 +1,8 @@
+Package: wlan-manager
+Version: 0.0.1-1
+Architecture: armhf
+Depends:
+Section: custom
+Priority: optional
+Description: Tool for managing WLAN configuration and connectivity
+Maintainer: Synaptics
