@@ -180,10 +180,10 @@ class WlanManager(object):
     #
     def current(self):
         if self.__is_ap_mode():
-            print("AP mode")
+            print("Mode: AP")
             return "ap", None, None
 
-        print("Station mode")
+        print("Mode: Station")
         name = None
         secured = False
 
@@ -199,11 +199,12 @@ class WlanManager(object):
             name = ""
             print("No connection")
         else:
-            print("Connected (SSID: {})".format(name))
+            security = "secured" if secured else "public"
+            print("SSID: {} ({})".format(name, security))
 
         return "station", name, secured
 
-    # Public function to enable/disable access point mode
+    # Public function to enable/disable AP mode
     #
     def ap_mode(self, enable):
         if enable and self.__is_ap_mode():
