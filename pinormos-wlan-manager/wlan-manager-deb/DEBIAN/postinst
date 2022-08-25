@@ -20,15 +20,14 @@ sudo chmod 600 /etc/wpa_supplicant/wpa_supplicant.conf.orig
 
 rfkill unblock 0
 
-sudo systemctl daemon-reload
-sudo systemctl restart dhcpcd.service
-systemctl is-active dnsmasq.service > /dev/null 2>&1 && sudo systemctl restart dnsmasq.service
+systemctl is-active dnsmasq.service > /dev/null 2>&1 && sudo systemctl stop dnsmasq.service
+rm -f /etc/systemd/system/multi-user.target.wants/dnsmasq.service
 systemctl list-unit-files | grep masked | grep hostapd.service > /dev/null 2>&1
 if [ $? == 0 ]; then
   sudo systemctl unmask hostapd.service
-else
-  systemctl is-active hostapd.service > /dev/null 2>&1 && sudo systemctl restart hostapd.service
 fi
+systemctl is-active hostapd.service > /dev/null 2>&1 && sudo systemctl stop hostapd.service
+rm -f /etc/systemd/system/multi-user.target.wants/hostapd.service
 
 sudo mkdir -p $PYTHONLIBDIR/system/wlan
 sudo cp $SOURCEDIR/wlan_manager.py $PYTHONLIBDIR/system/wlan/.
