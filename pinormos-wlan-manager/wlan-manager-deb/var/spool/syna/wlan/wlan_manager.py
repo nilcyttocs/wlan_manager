@@ -77,14 +77,14 @@ class WlanManager(object):
     #
     def __enable_ap_mode(self, enable):
         if enable:
+            self.__send_command("ln -sf /lib/systemd/system/dnsmasq.service /etc/systemd/system/multi-user.target.wants/dnsmasq.service")
+            self.__send_command("ln -sf /lib/systemd/system/hostapd.service /etc/systemd/system/multi-user.target.wants/hostapd.service")
             command = "cp -p {} {}".format(dhcpcd_conf_ap, dhcpcd_conf)
             self.__send_command(command)
             self.__send_command("systemctl daemon-reload")
             self.__send_command("systemctl restart dhcpcd.service")
             self.__send_command("systemctl start dnsmasq.service")
             self.__send_command("systemctl start hostapd.service")
-            self.__send_command("ln -sf /lib/systemd/system/dnsmasq.service /etc/systemd/system/multi-user.target.wants/dnsmasq.service")
-            self.__send_command("ln -sf /lib/systemd/system/hostapd.service /etc/systemd/system/multi-user.target.wants/hostapd.service")
         else:
             self.__send_command("rm -f /etc/systemd/system/multi-user.target.wants/hostapd.service")
             self.__send_command("rm -f /etc/systemd/system/multi-user.target.wants/dnsmasq.service")
