@@ -7,7 +7,7 @@
 
 import os, sys, time, re, subprocess, argparse
 
-version = "0.0.2"
+version = "0.0.3"
 
 dhcpcd_conf = "/etc/dhcpcd.conf"
 dhcpcd_conf_ap = "/etc/dhcpcd.conf.ap"
@@ -95,36 +95,23 @@ class WlanManager(object):
             self.__send_command("systemctl daemon-reload")
             self.__send_command("systemctl restart dhcpcd.service")
 
-    # Private function to get WLAN status
+    # Private function to check WLAN status
     #
     # "rfkill list wifi" output:
     #     0: phy0: Wireless LAN
     #             Soft blocked: yes|no
     #             Hard blocked: yes|no
     #
-    # Returns: tuple indicating software and hardware block status
-    #
-    def __get_wlan_status(self):
-        sw_blocked = True
-        hw_blocked = True
-
+    def __check_wlan_status(self):
         stdout = self.__send_command("rfkill list wifi")
         for str in stdout.splitlines():
             str = str.strip()
-            if re.match("Soft", str):
-                if str.split(":")[1].strip() == "no":
-                    sw_blocked = False
-            elif re.match("Hard", str):
-                if str.split(":")[1].strip() == "no":
-                    hw_blocked = False
-
-        return sw_blocked, hw_blocked
-
-    # Private function to enable/disable WLAN
-    #
-    def __enable_wlan(self, enable):
-        command = "rfkill unblock wifi" if enable else "rfkill block wifi"
-        self.__send_command(command)
+            if re.match("Hard", str):
+                if str.split(":")[1].strip() == "yes":
+                    raise WlanManagerError("WLAN blocked by hardware")
+            elif re.match("Soft", str):
+                if str.split(":")[1].strip() == "yes":
+                    raise WlanManagerError("WLAN blocked by software")
 
     # Private function to parse output of "iwlist wlan0 scan" for available networks
     #
@@ -174,11 +161,19 @@ class WlanManager(object):
         command = "cp -p {} {}".format(wpa_conf_orig, wpa_conf)
         self.__send_command(command)
 
+    # Public function to enable/disable WLAN
+    #
+    def enable_wlan(self, enable):
+        command = "rfkill unblock wifi" if enable else "rfkill block wifi"
+        self.__send_command(command)
+
     # Public function to show current connection status
     #
     # Returns: tuple (mode: string, SSID: string, secured: boolean) indicating connection status
     #
     def current(self):
+        self.__check_wlan_status()
+
         if self.__is_ap_mode():
             print("Mode: AP")
             return "ap", None, None
@@ -207,6 +202,8 @@ class WlanManager(object):
     # Public function to enable/disable AP mode
     #
     def ap_mode(self, enable):
+        self.__check_wlan_status()
+
         if enable and self.__is_ap_mode():
             return
 
@@ -224,16 +221,7 @@ class WlanManager(object):
     # Returns: list of tuples (SSID: string, secured: boolean) of available networks
     #
     def list(self):
-        # get WLAN status
-        sw_blocked, hw_blocked = self.__get_wlan_status()
-
-        # abort if WLAN hardware blocked
-        if hw_blocked:
-            raise WlanManagerError("WLAN hardware blocked")
-
-        # enable WLAN if necessary
-        if sw_blocked:
-            self.__enable_wlan(True)
+        self.__check_wlan_status()
 
         # scan for available networks
         stdout = self.__send_command("iwlist wlan0 scan")
@@ -244,30 +232,17 @@ class WlanManager(object):
             security = "secured" if secured else "public"
             print("{} ({})".format(name, security))
 
-        # disable WLAN if originally disabled
-        #if sw_blocked:
-            #self.__enable_wlan(False)
-
         return list
 
     # Public function to connect to specified SSID with supplied password
     #
     def connect(self, ssid=None, password=None, timeout=30):
+        self.__check_wlan_status()
+
         if ssid is None:
             raise WlanManagerError("No SSID specified")
 
         self.ap_mode(False)
-
-        # get WLAN status
-        sw_blocked, hw_blocked = self.__get_wlan_status()
-
-        # abort if WLAN hardware blocked
-        if hw_blocked:
-            raise WlanManagerError("WLAN hardware blocked")
-
-        # enable WLAN if necessary
-        if sw_blocked:
-            self.__enable_wlan(True)
 
         # update WPA supplicant config file to add specified SSID entry
         command = "wpa_passphrase {:s} {:s} >> {:s}".format(ssid, password, wpa_conf)
@@ -307,13 +282,20 @@ class WlanManager(object):
     # Public function to disconnect from network
     #
     def disconnect(self):
-        #self.__enable_wlan(False)
         self.__restore_wpa_config()
         self.__send_command("wpa_cli -i wlan0 reconfigure")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="WLAN Connectivity Manager")
+
+    parser.add_argument(
+        "--on", action="store_true", help="turn on WLAN"
+    )
+
+    parser.add_argument(
+        "--off", action="store_true", help="turn off WLAN"
+    )
 
     parser.add_argument(
         "-c", "--current", action="store_true", help="current connection status"
@@ -354,7 +336,21 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.current == True:
+    if args.on == True:
+        try:
+            wm = WlanManager()
+            wm.enable_wlan(True)
+        except WlanManagerError as err:
+            print("Error: {}".format(err))
+
+    elif args.off == True:
+        try:
+            wm = WlanManager()
+            wm.enable_wlan(False)
+        except WlanManagerError as err:
+            print("Error: {}".format(err))
+
+    elif args.current == True:
         try:
             wm = WlanManager()
             wm.current()
