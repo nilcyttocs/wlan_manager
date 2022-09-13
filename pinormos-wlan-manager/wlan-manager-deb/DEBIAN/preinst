@@ -1,3 +1,7 @@
 #!/bin/sh
 
 # Pre-installation shell script for Debian package
+
+PYTHONLIBDIR=/usr/local/syna/lib/python
+
+sudo mkdir -p $PYTHONLIBDIR/system/wlan

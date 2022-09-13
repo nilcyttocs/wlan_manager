@@ -2,25 +2,18 @@
 
 # Pre-removal shell script for Debian package
 
-SOURCEDIR=/var/spool/syna/wlan
-PYTHONLIBDIR=/usr/local/syna/lib/python
-
-sudo cp $SOURCEDIR/dhcpcd.conf.orig /etc/dhcpcd.conf
+sudo cp etc/dhcpcd.conf.orig /etc/dhcpcd.conf
 sudo chown root:netdev /etc/dhcpcd.conf
 sudo chmod 664 /etc/dhcpcd.conf
-sudo rm -f /etc/dhcpcd.conf.*
 
-sudo rm -f /etc/hostapd/hostapd.conf
-sudo cp $SOURCEDIR/hostapd.orig /etc/default/hostapd
+sudo cp /etc/dnsmasq.conf.orig /etc/dnsmasq.conf
 
-sudo cp $SOURCEDIR/dnsmasq.conf.orig /etc/dnsmasq.conf
+sudo cp /etc/default/hostapd.orig /etc/default/hostapd
 
 systemctl is-active dnsmasq.service > /dev/null 2>&1 && sudo systemctl stop dnsmasq.service
 rm -f /etc/systemd/system/multi-user.target.wants/dnsmasq.service
 
 systemctl is-active hostapd.service > /dev/null 2>&1 && sudo systemctl stop hostapd.service
 rm -f /etc/systemd/system/multi-user.target.wants/hostapd.service
-
-sudo rm -f $PYTHONLIBDIR/system/wlan/wlan_manager.py
 
 systemctl is-active jupyterlab.service > /dev/null 2>&1 && sudo systemctl restart jupyterlab.service

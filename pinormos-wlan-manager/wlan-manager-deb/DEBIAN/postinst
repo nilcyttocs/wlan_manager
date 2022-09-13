@@ -2,19 +2,13 @@
 
 # Post-installation shell script for Debian package
 
-SOURCEDIR=/var/spool/syna/wlan
-PYTHONLIBDIR=/usr/local/syna/lib/python
-
-sudo cp $SOURCEDIR/dhcpcd.conf.* /etc/.
 sudo chown root:netdev /etc/dhcpcd.conf.*
 sudo chmod 664 /etc/dhcpcd.conf.*
 
-sudo cp $SOURCEDIR/hostapd.conf /etc/hostapd/.
-sudo cp $SOURCEDIR/hostapd /etc/default/.
+sudo cp /etc/dnsmasq.conf.ap /etc/dnsmasq.conf
 
-sudo cp $SOURCEDIR/dnsmasq.conf /etc/.
+sudo cp /etc/default/hostapd.ap /etc/default/hostapd
 
-sudo cp $SOURCEDIR/wpa_supplicant.conf.orig /etc/wpa_supplicant/.
 sudo chmod 600 /etc/wpa_supplicant/wpa_supplicant.conf.orig
 
 rfkill unblock 0
@@ -28,8 +22,5 @@ if [ $? == 0 ]; then
 fi
 systemctl is-active hostapd.service > /dev/null 2>&1 && sudo systemctl stop hostapd.service
 rm -f /etc/systemd/system/multi-user.target.wants/hostapd.service
-
-sudo mkdir -p $PYTHONLIBDIR/system/wlan
-sudo cp $SOURCEDIR/wlan_manager.py $PYTHONLIBDIR/system/wlan/.
 
 systemctl is-active jupyterlab.service > /dev/null 2>&1 && sudo systemctl restart jupyterlab.service
