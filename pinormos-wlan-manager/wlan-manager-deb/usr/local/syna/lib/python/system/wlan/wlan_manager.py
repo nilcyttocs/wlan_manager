@@ -298,11 +298,15 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-c", "--current", action="store_true", help="current connection status"
+        "--ap", action="store_true", help="access point mode"
     )
 
     parser.add_argument(
-        "-a", "--ap", action="store_true", help="access point mode"
+        "--sta", action="store_true", help="station mode"
+    )
+
+    parser.add_argument(
+        "-c", "--current", action="store_true", help="current connection status"
     )
 
     parser.add_argument(
@@ -350,17 +354,24 @@ if __name__ == "__main__":
         except WlanManagerError as err:
             print("Error: {}".format(err))
 
-    elif args.current == True:
-        try:
-            wm = WlanManager()
-            wm.current()
-        except WlanManagerError as err:
-            print("Error: {}".format(err))
-
     elif args.ap == True:
         try:
             wm = WlanManager()
             wm.ap_mode(True)
+        except WlanManagerError as err:
+            print("Error: {}".format(err))
+
+    elif args.sta == True:
+        try:
+            wm = WlanManager()
+            wm.ap_mode(False)
+        except WlanManagerError as err:
+            print("Error: {}".format(err))
+
+    elif args.current == True:
+        try:
+            wm = WlanManager()
+            wm.current()
         except WlanManagerError as err:
             print("Error: {}".format(err))
 
