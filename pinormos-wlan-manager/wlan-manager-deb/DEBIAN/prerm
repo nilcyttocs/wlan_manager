@@ -3,8 +3,6 @@
 # Pre-removal shell script for Debian package
 
 sudo cp etc/dhcpcd.conf.orig /etc/dhcpcd.conf
-sudo chown root:netdev /etc/dhcpcd.conf
-sudo chmod 664 /etc/dhcpcd.conf
 
 sudo cp /etc/dnsmasq.conf.orig /etc/dnsmasq.conf
 

@@ -2,13 +2,20 @@
 
 # Post-installation shell script for Debian package
 
+sudo chown root:root /usr/local/syna/lib/python/system/wlan/wlan_manager.py
+
 sudo chown root:netdev /etc/dhcpcd.conf.*
 sudo chmod 664 /etc/dhcpcd.conf.*
 
+sudo chown root:root /etc/dnsmasq.conf.ap
+sudo chown root:root /etc/dnsmasq.conf.orig
 sudo cp /etc/dnsmasq.conf.ap /etc/dnsmasq.conf
 
+sudo chown root:root /etc/default/hostapd.ap
+sudo chown root:root /etc/default/hostapd.orig
 sudo cp /etc/default/hostapd.ap /etc/default/hostapd
 
+sudo chown root:root /etc/wpa_supplicant/wpa_supplicant.conf.orig
 sudo chmod 600 /etc/wpa_supplicant/wpa_supplicant.conf.orig
 
 rfkill unblock 0
