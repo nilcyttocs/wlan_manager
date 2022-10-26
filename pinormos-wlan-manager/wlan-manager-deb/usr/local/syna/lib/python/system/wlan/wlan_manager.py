@@ -132,8 +132,8 @@ class WlanManager(object):
                     entry = (name, secured)
                     if entry not in list:
                         list.append(entry)
-                        name = None
-                        secured = False
+                    name = None
+                    secured = False
 
             # set SSID of new cell
             if re.search("ESSID", str):
