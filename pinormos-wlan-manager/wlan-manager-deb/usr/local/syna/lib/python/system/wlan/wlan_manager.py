@@ -7,7 +7,7 @@
 
 import os, sys, time, re, subprocess, argparse
 
-version = "0.0.3"
+version = "0.0.5"
 
 dhcpcd_conf = "/etc/dhcpcd.conf"
 dhcpcd_conf_ap = "/etc/dhcpcd.conf.ap"
@@ -340,62 +340,66 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    wm = WlanManager()
+
     if args.on == True:
         try:
-            wm = WlanManager()
             wm.enable_wlan(True)
         except WlanManagerError as err:
             print("Error: {}".format(err))
+        finally:
+            sys.exit()
 
     elif args.off == True:
         try:
-            wm = WlanManager()
             wm.enable_wlan(False)
         except WlanManagerError as err:
             print("Error: {}".format(err))
+        finally:
+            sys.exit()
 
-    elif args.ap == True:
+    try:
+        wm.enable_wlan(True)
+    except WlanManagerError as err:
+        print("Error: {}".format(err))
+        sys.exit()
+
+    if args.ap == True:
         try:
-            wm = WlanManager()
             wm.ap_mode(True)
         except WlanManagerError as err:
             print("Error: {}".format(err))
 
     elif args.sta == True:
         try:
-            wm = WlanManager()
             wm.ap_mode(False)
         except WlanManagerError as err:
             print("Error: {}".format(err))
 
     elif args.current == True:
         try:
-            wm = WlanManager()
             wm.current()
         except WlanManagerError as err:
             print("Error: {}".format(err))
 
     elif args.list == True:
         try:
-            wm = WlanManager()
             wm.list()
         except WlanManagerError as err:
             print("Error: {}".format(err))
 
     elif args.ssid != None:
         try:
-            wm = WlanManager()
             wm.connect(args.ssid, args.password, args.timeout)
         except WlanManagerError as err:
             print("Error: {}".format(err))
 
     elif args.disconnect == True:
         try:
-            wm = WlanManager()
             wm.disconnect()
         except WlanManagerError as err:
             print("Error: {}".format(err))
 
     else:
         parser.print_help()
-        sys.exit(2)
+        sys.exit()
